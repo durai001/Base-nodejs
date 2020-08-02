@@ -13,12 +13,12 @@ socialUserValidationSchema = require('./model_validations').socialUserValidation
 User = Bookshelf.Model.extend({
   tableName: 'users',
   // hasTimestamps: true,
-  hidden: ['encrypted_password', 'password', 'confirm_password', 'otpToken','created_at','updated_at','is_delete'],
+  hidden: ['OTP','providerName','providerId','encrypted_password', 'password', 'confirm_password', 'otpToken','created_at','updated_at','is_delete'],
   require: false,
   initialize: function () {
     this.on('creating', this.validateEverything);
     this.on('creating', this.hashPassword);
-    this.on('saving', this.validateExistingUsername);
+    // this.on('saving', this.validateExistingUsername);
     this.on('saving', this.validateExistingEmail);
     // this.on('saving', this.validateExistingMobile);
     return this.on('updating', this.updatePassword);
@@ -86,15 +86,15 @@ User = Bookshelf.Model.extend({
       });
     }
   },
-  // validateExistingMobile: function(model, attrs, options) {
-  //   if (this.hasChanged('mobile')) {
-  //     return User.query('where', 'mobile', this.get('mobile')).fetch().then(function(existing) {
-  //       if (existing) {
-  //         throw new Error('Phone number already exists');
-  //       }
-  //     });
-  //   }
-  // },
+  validateExistingMobile: function(model, attrs, options) {
+    if (this.hasChanged('phone_number')) {
+      return User.query('where', 'phone_number', this.get('phone_number')).fetch().then(function(existing) {
+        if (existing) {
+          throw new Error('Phone number already exists');
+        }
+      });
+    }
+  },
 
   hashPassword: function (model, attrs, options) {
     if (!model.has('providerId')) {

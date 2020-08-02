@@ -10,36 +10,34 @@ tokenSecret = require('./config').tokenSecret;
 
 LocalStrategy = require('passport-local').Strategy;
 
-module.exports = function(passport) {
+module.exports = function (passport) {
   let opts;
   opts = {};
   opts.secretOrKey = tokenSecret;
   opts.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme("JWT");
   opts.ignoreExpiration = true;
-  passport.use('jwt', new JwtStrategy(opts, function(jwt_payload, done) {
-     return User.forge({
+  passport.use('jwt', new JwtStrategy(opts, function (jwt_payload, done) {
+    return User.forge({
       UID: jwt_payload.UID
     }).fetch({
-      require:false,
+      require: false,
       withRelated: ['role']
-    }).then(function(user) {
-      if(user){
+    }).then(function (user, err) {
+      if (user) {
         console.log('Authentication success');
         return done(null, user);
-      }else{
-        console.log('Authentication failed');
-        return done(new Error("Unauthorized"), "");
+      } else {
+        return done(null, null, 'Unauthorized');
       }
-      // }
-    })["catch"](function(err) {
-      console.log(err)
-      return done(err, false);
+    })["catch"](function (err) {
+      console.log(err, "sss")
+      return done(false, false, "Unauthorized");
     });
-  })) 
+  }))
   return passport.use('local', new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password'
-  }, function(email, password, done) {
+  }, function (email, password, done) {
     let criteria;
     if (!email || !password) {
       return done({
@@ -49,17 +47,17 @@ module.exports = function(passport) {
     criteria = email.indexOf('@') === -1 ? {
       userName: email
     } : {
-      email: email
-    };
+        email: email
+      };
     return User.forge(criteria).fetch({
       withRelated: ['role']
-    }).then(function(user) {
+    }).then(function (user) {
       if (!user) {
         return done(null, {
           err: 'Invalid Username/Email'
         });
       }
-      return User.comparePassword(password, user, function(err, valid) {
+      return User.comparePassword(password, user, function (err, valid) {
         if (err) {
           return done(err);
         }

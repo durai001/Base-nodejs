@@ -52,8 +52,7 @@ module.exports = function (app, config) {
     return req.user.related('role').get('name') === 'Admin';
   });
 
-
-  app.use('/boogalu', require('../app/routes/index.route'));
+   app.use('/easy_chat', require('../app/routes/index.route'));
 
   app.use(function (req, res, next) {
     return res.status(404).json({

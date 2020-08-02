@@ -10,10 +10,9 @@ categoryValidationSchema = Joi.object().keys({
 });
 
 socialUserValidationSchema = Joi.object().keys({
-  fullname: Joi.string().required().label('Full Name'),
-  // email: Joi.string().email().required().label('Email'),
+  U_name: Joi.string().required().label('User Name'),
   providerId: Joi.string().required().label('Provider Id'),
-  providerName: Joi.string().required().valid('Twitter', 'Facebook', 'Instagram').label('Provider Name'),
+  providerName: Joi.string().required().valid('Twitter','Google', 'Facebook', 'Instagram').label('Provider Name'),
 }).options({
   abortEarly: false,
   allowUnknown: true
@@ -22,7 +21,6 @@ socialUserValidationSchema = Joi.object().keys({
 
 userValidationSchema = Joi.object().keys({
   U_name: Joi.string().required().label('U_name'),
-  user_name: Joi.string().required().label('username'),
   email: Joi.string().email().required().label('Email'),
   gender: Joi.string().valid('Male', 'Female').label('Gender'),
   location: Joi.string().label('Location'),

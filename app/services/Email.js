@@ -8,8 +8,8 @@ const transporter = nodemailer.createTransport(sendInBlue({ apiKey: sendInBlueKE
   let mailOptions = {
     from: mailFrom, // sender address
     to: user.email, // list of receivers
-    subject: 'Boogalu - Reset Password', // Subject line
-    html: `Hi ${user.usrename} your OTP (One Time Password) is ${OTP}`
+    subject: 'easy_chat - Reset Password', // Subject line
+    html: `Hi ${user.U_name} your OTP (One Time Password) is ${OTP}`
   };
   sendMail(mailOptions) 
 }; 

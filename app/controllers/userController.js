@@ -1,7 +1,5 @@
 let User = require('../models/user');
-let UserProfession = require('../models/user_professions')
-let UserInterested = require('../models/user_interested')
-
+ 
 let _ = require("lodash")
 // changePasswordSchema = require('../models/model_validations').changePasswordSchema;
 toJSON = require('utils-error-to-json');
@@ -63,6 +61,7 @@ module.exports = {
         failureHandler(202, e, res);
       })
   },
+
   changePassword: function (req, res) {
     validation.changePasswordSchema.validate(req.body, function (err, value) {
       if (err) {
@@ -121,33 +120,55 @@ module.exports = {
   //       });
   //     });
   //   },
-  //   userDeatails: function(req, res) {
 
-  //     User.forge({id: req.query.user_id})
-  //     .orderBy('created_at', 'ASEC')
 
-  //   .fetch({ withRelated: ['role','set_track_status']})
-  //      .then(function(user) {
-  //       if(!user){
-  //         res.status(400).json({
-  //           status: "Faild",
-  //           massage: "User does not exists"
-  //         })
-  //       }else{
-  //         res.status(200).json({
-  //           status: "Success",
-  //           user: user
-  //         })
-  //       }
-  //       })["catch"](function(err) {
-  //         // (err)
-  //           if (!toJSON(err).isJoi) {
-  //             err = toJSON(err).message;
-  //           }
-  //           failureHandler(400, err, res);
-  //         });
+  get_all_users: function (req, res) {
+    let search = req.query.search || ""
+    let page = req.query.page || 1
+    let limit = req.query.limit || 200
 
-  //   }, 
+    User.forge({ is_delete: 0 }).query(qb => {
+      qb.where('UID', '<>', req.user.get('UID'))
+      if (search) {
+        qb.where('U_name', 'LIKE', `%${search}%`).orWhere('email', 'LIKE', `%${search}%`)
+      }
+    })
+      .fetchPage({
+        page: parseInt(page),
+        pageSize: parseInt(limit),
+        withRelated: ['role']
+      })
+      .then(function (users) {
+        if (users) {
+          users_list = users.toJSON()
+          let obj = { users_list, pagination: users.pagination }
+          successHandler(200, obj, res)
+        } else {
+          successHandler(200, users, res)
+        }
+
+      }).catch(e => {
+        failureHandler(412, e, res);
+      })
+  },
+
+
+  userDeatails: function (req, res) {
+    console.log(req.query.user_id)
+    User.forge({ UID: req.query.user_id })
+      .orderBy('created_at', 'ASEC')
+      .fetch({ require: false, withRelated: ['role'] })
+      .then(function (user) {
+        if (!user) {
+          failureHandler(402, new Error("User does not exists"), res)
+        } else {
+          successHandler(200, user, res)
+        }
+      })["catch"](function (err) {
+        failureHandler(400, err, res);
+      });
+
+  },
   //   updateProfileImg:function(req,res){
 
   // if(req.files.profile_img.file){
@@ -318,28 +339,7 @@ module.exports = {
   //     });
   //   }
 
-};
-function updateProfession(profession_list) {
-  console.log(profession_list.split(','))
-  let professionArray = profession_list.split(',')
-  UserProfession.forge({}).fetchAll().then(res => {
-    console.log(res)
-  })
-  // profession_list.forEach(element => {
-  //   console.log(element)
-  // });
-
-}
-function updateInterested(interested_list) {
-  console.log(interested_list.split(','))
-  let interestedArray = interested_list.split(',')
-  UserInterested.forge({}).fetchAll().then(res => {
-    console.log(res)
-  })
-  // interested_list.forEach(element => {
-  //   console.log(element)
-  // });
-}
+}; 
 
 function failureHandler(code, data, res) {
 
